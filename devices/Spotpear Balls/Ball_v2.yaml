@@ -614,25 +614,27 @@ script:
             - display.page.show: initializing_page
             - component.update: s3_box_lcd
 
-  - id: fetch_first_active_timer
+  -  - id: fetch_first_active_timer
     then:
       - lambda: |
-          const auto timers = id(va).get_timers();
-          auto output_timer = timers.begin()->second;
-          for (auto &iterable_timer : timers) {
-            if (iterable_timer.second.is_active && iterable_timer.second.seconds_left <= output_timer.seconds_left) {
-              output_timer = iterable_timer.second;
+          const auto &timers = id(va).get_timers();
+          if (!timers.empty()) {
+            auto output_timer = timers.front();
+            for (const auto &iterable_timer : timers) {
+              if (iterable_timer.is_active && iterable_timer.seconds_left <= output_timer.seconds_left) {
+                output_timer = iterable_timer;
+              }
             }
+            id(global_first_timer) = output_timer;
           }
-          id(global_first_active_timer) = output_timer;
   - id: check_if_timers_active
     then:
       - lambda: |
-          const auto timers = id(va).get_timers();
+          const auto &timers = id(va).get_timers();
           bool output = false;
-          if (timers.size() > 0) {
-            for (auto &iterable_timer : timers) {
-              if(iterable_timer.second.is_active) {
+          if (!timers.empty()) {
+            for (const auto &iterable_timer : timers) {
+              if(iterable_timer.is_active) {
                 output = true;
               }
             }
@@ -641,23 +643,20 @@ script:
   - id: fetch_first_timer
     then:
       - lambda: |
-          const auto timers = id(va).get_timers();
-          auto output_timer = timers.begin()->second;
-          for (auto &iterable_timer : timers) {
-            if (iterable_timer.second.seconds_left <= output_timer.seconds_left) {
-              output_timer = iterable_timer.second;
+          const auto &timers = id(va).get_timers();
+          auto output_timer = timers.front();
+          for (const auto &iterable_timer : timers) {
+            if (iterable_timer.seconds_left <= output_timer.seconds_left) {
+              output_timer = iterable_timer;
             }
           }
           id(global_first_timer) = output_timer;
   - id: check_if_timers
     then:
       - lambda: |
-          const auto timers = id(va).get_timers();
+          const auto &timers = id(va).get_timers();
           bool output = false;
-          if (timers.size() > 0) {
-            output = true;
-          }
-          id(global_is_timer) = output;
+          id(global_is_timer) = !timers.empty();
 
   - id: draw_timer_timeline
     then:
