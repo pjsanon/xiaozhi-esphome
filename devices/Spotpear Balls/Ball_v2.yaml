@@ -614,7 +614,7 @@ script:
             - display.page.show: initializing_page
             - component.update: s3_box_lcd
 
-  -  - id: fetch_first_active_timer
+  - id: fetch_first_active_timer
     then:
       - lambda: |
           const auto &timers = id(va).get_timers();
